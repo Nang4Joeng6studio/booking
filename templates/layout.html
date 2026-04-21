@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.brand }}</title>
+    <style>
+        :root { --green: #2d6a4f; --white: #ffffff; --error: #d32f2f; --success: #388e3c; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: var(--white); 
+            color: #1a1a1a; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .container { width: 100%; max-width: 400px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .logo { max-width: 100px; margin-bottom: 10px; border-radius: 8px; }
+        h1 { margin: 10px 0; font-size: 1.5rem; }
+        
+        .lang { 
+            text-align: right; 
+            width: 100%; 
+            max-width: 400px; 
+            font-size: 0.85rem; 
+            margin-bottom: 10px; 
+        }
+        .lang a { 
+            color: var(--green); 
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .lang a:hover { background: #f0f0f0; }
+        
+        .alert {
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .alert.success { 
+            background: #e8f5e9; 
+            border-color: var(--success); 
+            color: #1b5e20;
+        }
+        .alert.error { 
+            background: #ffebee; 
+            border-color: var(--error); 
+            color: #b71c1c;
+        }
+        
+        .form-group {
+            margin: 16px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+        }
+        
+        .btn { 
+            background: var(--green); 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 4px; 
+            width: 100%; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #1f4e3c; }
+        .btn:active { transform: scale(0.98); }
+        
+        .member-list { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            font-size: 0.9rem; 
+            background: #f9f9f9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .member-list tr { border-bottom: 1px solid #eee; }
+        .member-list tr:hover { background: #f0f0f0; cursor: pointer; }
+        .member-list td { 
+            padding: 12px; 
+        }
+        .member-list td:last-child { color: #999; }
+        
+        .hrs { 
+            font-size: 3rem; 
+            font-weight: bold; 
+            color: var(--green); 
+            display: block; 
+            margin: 20px 0; 
+            text-align: center; 
+        }
+        .hrs-label {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .link-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .link-container a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .link-container a:hover { text-decoration: underline; }
+        
+        .logout-link {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .logout-link a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .logout-link a:hover { text-decoration: underline; }
+        
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .hrs { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="lang">
+        <a href="/set_lang/zh">中文</a> | <a href="/set_lang/en">EN</a>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            {% if icon %}<img src="{{ icon }}" class="logo" alt="Logo">{% endif %}
+            <h1>{{ t.brand }}</h1>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if page == 'login' %}
+            <h2 style="text-align: center;">{{ t.login }}</h2>
+            <form method="POST" novalidate>
+                <div class="form-group">
+                    <label for="email">{{ t.email }}</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">{{ t.pw }}</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">{{ t.login }}</button>
+            </form>
+            <div class="link-container">
+                <p><a href="/register">{{ t.no_acct }}</a></p>
+            </div>
+
+        {% elif page == 'register' %}
+            <h2 style="text-align: center;">{{ t.register }}</h2>
+            <form method="POST" novalidate>
+                <div class="form-group">
+                    <label for="username">{{ t.username }}</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">{{ t.email }}</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">{{ t.pw }}</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="password_confirm">{{ t.password_confirm }}</label>
+                    <input type="password" id="password_confirm" name="password_confirm" required>
+                </div>
+                <button type="submit" class="btn">{{ t.register }}</button>
+            </form>
+            <div class="link-container">
+                <p><a href="/login">Back to {{ t.login }}</a></p>
+            </div>
+
+        {% elif page == 'index' %}
+            <div class="hrs">{{ user.remaining_hours }}</div>
+            <div class="hrs-label">{{ t.hrs }}</div>
+            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            
+            <form action="/book" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="booking_date">{{ t.booking_date }}</label>
+                    <input type="date" id="booking_date" name="booking_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="booking_type">{{ t.booking_type }}</label>
+                    <select id="booking_type" name="booking_type" required>
+                        <option value="">-- Select --</option>
+                        <option value="wheel">{{ t.wheel }}</option>
+                        <option value="hand">{{ t.hand }}</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">{{ t.submit }}</button>
+            </form>
+            
+            <div class="logout-link">
+                <a href="/logout">{{ t.logout }}</a>
+            </div>
+
+        {% elif page == 'admin' %}
+            <h2>{{ t.admin_title }}</h2>
+            <form method="POST" novalidate>
+                <div class="form-group">
+                    <label for="admin_email">{{ t.email }}</label>
+                    <input type="email" id="admin_email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="hrs">Hours to Add</label>
+                    <input type="number" id="hrs" name="hrs" step="0.5" min="0" required>
+                </div>
+                <button type="submit" class="btn">{{ t.topup_btn }}</button>
+            </form>
+            
+            <h3 style="margin-top: 30px;">Member List</h3>
+            <table class="member-list">
+                {% for u in all_users %}
+                <tr onclick="document.getElementById('admin_email').value = '{{ u.email }}'; document.getElementById('admin_email').focus();">
+                    <td><b>{{ u.username }}</b></td>
+                    <td><strong>{{ u.remaining_hours }}h</strong></td>
+                    <td>{{ u.email }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <div class="logout-link">
+                <a href="/logout">{{ t.logout }}</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
