@@ -230,6 +230,15 @@
                         <option value="hand">{{ t.hand }}</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="booking_time">{{ t.booking_time }}</label>
+                    <select id="booking_time" name="booking_time" required>
+                        <option value="">-- Select Time --</option>
+                        {% for time in booking_times %}
+                        <option value="{{ time }}">{{ time }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <button type="submit" class="btn">{{ t.submit }}</button>
             </form>
             

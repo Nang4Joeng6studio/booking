@@ -14,6 +14,9 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'nang4_studio_vscode_secure')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nang4_studio.db'
 db = SQLAlchemy(app)
 
+# 預約時段
+BOOKING_TIMES = ['09:00', '10:30', '12:00', '14:00', '16:00', '18:00']
+
 # 語系設定
 LANG_DICT = {
     'zh': {
@@ -22,7 +25,7 @@ LANG_DICT = {
         'username': '稱呼', 'hrs': '剩餘時數', 'book_now': '立即預約', 'submit': '確認預約',
         'logout': '登出', 'admin_title': '會員管理與 Top-up', 'topup_btn': '確認充值',
         'no_acct': '還沒有帳戶？按此註冊', 'wheel': '陶輪', 'hand': '手捏陶土',
-        'booking_date': '預約日期', 'booking_type': '課程類型', 'booking_success': '預約成功！',
+        'booking_date': '預約日期', 'booking_type': '課程類型', 'booking_time': '預約時段', 'booking_success': '預約成功！',
         'error_past_date': '無法預約過去的日期', 'error_insufficient_hours': '時數不足',
         'error_email_exists': '此電郵已被註冊', 'error_invalid_password': '密碼或電郵錯誤',
         'password_confirm': '確認密碼', 'error_password_mismatch': '密碼不相符'
@@ -33,7 +36,7 @@ LANG_DICT = {
         'username': 'Name', 'hrs': 'Hours Left', 'book_now': 'Book Now', 'submit': 'Confirm Booking',
         'logout': 'Logout', 'admin_title': 'Member & Top-up', 'topup_btn': 'Top-up',
         'no_acct': "Don't have an account? Register here", 'wheel': 'Pottery Wheel', 'hand': 'Hand Building',
-        'booking_date': 'Booking Date', 'booking_type': 'Course Type', 'booking_success': 'Booking Confirmed!',
+        'booking_date': 'Booking Date', 'booking_type': 'Course Type', 'booking_time': 'Booking Time', 'booking_success': 'Booking Confirmed!',
         'error_past_date': 'Cannot book past dates', 'error_insufficient_hours': 'Insufficient hours',
         'error_email_exists': 'Email already registered', 'error_invalid_password': 'Invalid email or password',
         'password_confirm': 'Confirm Password', 'error_password_mismatch': 'Passwords do not match'
@@ -53,6 +56,7 @@ class Booking(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     booking_date = db.Column(db.DateTime, nullable=False)
     booking_type = db.Column(db.String(50), nullable=False)
+    booking_time = db.Column(db.String(50), nullable=False, default='09:00')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('bookings', lazy=True))
 
@@ -153,6 +157,7 @@ def book():
     if request.method == 'POST':
         booking_date_str = request.form.get('booking_date')
         booking_type = request.form.get('booking_type')
+        booking_time = request.form.get('booking_time')
         
         try:
             booking_date = datetime.fromisoformat(booking_date_str)
@@ -168,7 +173,8 @@ def book():
             booking = Booking(
                 user_id=user.id,
                 booking_date=booking_date,
-                booking_type=booking_type
+                booking_type=booking_type,
+                booking_time=booking_time
             )
             user.remaining_hours -= 1
             
@@ -182,7 +188,7 @@ def book():
             db.session.rollback()
             flash('An error occurred while booking.', 'error')
     
-    return render_template('layout.html', page='index', t=LANG_DICT[session['lang']], user=user, icon=get_icon_base64())
+    return render_template('layout.html', page='index', t=LANG_DICT[session['lang']], user=user, icon=get_icon_base64(), booking_times=BOOKING_TIMES)
 
 @app.route('/nang4_topup', methods=['GET', 'POST'])
 def admin():
@@ -191,7 +197,8 @@ def admin():
         return redirect(url_for('login'))
     
     admin_user = User.query.get(session['user_id'])
-    if not admin_user or admin_user.email != os.getenv('ADMIN_EMAIL', 'admin@nang4joeng6.studio'):
+    admin_email = os.getenv('ADMIN_EMAIL', 'admin@nang4joeng6.studio').lower()
+    if not admin_user or admin_user.email.lower() != admin_email:
         flash('Access denied. Admin only.', 'error')
         return redirect(url_for('index'))
     
